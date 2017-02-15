@@ -113,8 +113,9 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
         res['item_ids'] = items
         return res
 
-    @api.model
+    @api.multi
     def _prepare_purchase_order(self, picking_type, location, company):
+        self.ensure_one()
         if not self.supplier_id:
             raise exceptions.Warning(
                 _('Enter a supplier.'))
@@ -133,8 +134,9 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
             }
         return data
 
-    @api.model
+    @api.multi
     def _prepare_purchase_order_line(self, po, item):
+        self.ensure_one()
         po_line_obj = self.env['purchase.order.line']
         product = item.product_id
         supplier = self.supplier_id
@@ -177,10 +179,10 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
 
     @api.model
     def _get_order_line_search_domain(self, order, item):
-        vals = self._prepare_purchase_order_line(order, item)
         order_line_data = [('order_id', '=', order.id),
                            ('product_id', '=', item.product_id.id or False),
-                           ('product_uom', '=', vals['product_uom']),
+                           ('product_uom', '=', item.product_uom_id.id or
+                            item.product_id.uom_po_id),
                            ('account_analytic_id', '=',
                             item.line_id.analytic_account_id.id or False),
                            ]
@@ -195,31 +197,24 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
 
     @api.multi
     def make_purchase_order(self):
+        self.ensure_one()
         res = []
         purchase_obj = self.env['purchase.order']
         po_line_obj = self.env['purchase.order.line']
         pr_line_obj = self.env['purchase.request.line']
-        purchase = False
-
         for item in self.item_ids:
             line = item.line_id
             if item.product_qty <= 0.0:
                 raise exceptions.Warning(
                     _('Enter a positive quantity.'))
-
             location = line.request_id.picking_type_id.default_location_dest_id
-            if self.purchase_order_id:
-                purchase = self.purchase_order_id
-            if not purchase:
+            if not self.purchase_order_id:
                 po_data = self._prepare_purchase_order(
                     line.request_id.picking_type_id, location,
                     line.company_id)
-                purchase = purchase_obj.create(po_data)
-
-            # Look for any other PO line in the selected PO with same
-            # product and UoM to sum quantities instead of creating a new
-            # po line
-            domain = self._get_order_line_search_domain(purchase, item)
+                self.purchase_order_id = purchase_obj.create(po_data)
+            domain = self._get_order_line_search_domain(
+                self.purchase_order_id, item)
             available_po_lines = po_line_obj.search(domain)
             if available_po_lines:
                 po_line = available_po_lines[0]
@@ -230,13 +225,13 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
                     po_line.price_unit = new_price
                     po_line.purchase_request_lines = [(4, line.id)]
             else:
-                po_line_data = self._prepare_purchase_order_line(purchase,
-                                                                 item)
+                po_line_data = self._prepare_purchase_order_line(
+                    self.purchase_order_id, item)
                 po_line_obj.create(po_line_data)
-            res.append(purchase.id)
 
+        res.append(self.purchase_order_id.id)
         return {
-            'domain': "[('id','in', ["+','.join(map(str, res))+"])]",
+            'domain': "[('id','in', [" + ','.join(map(str, res)) + "])]",
             'name': _('RFQ'),
             'view_type': 'form',
             'view_mode': 'tree,form',
