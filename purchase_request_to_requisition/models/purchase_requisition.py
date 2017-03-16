@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 Eficent Business and IT Consulting Services S.L.
+# Copyright 2017 Eficent Business and IT Consulting Services S.L.
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl-3.0).
 
-from openerp import _, api, fields, models
+from odoo import _, api, fields, models
 
 
 class PurchaseRequisition(models.Model):
@@ -55,8 +55,8 @@ class PurchaseRequisition(models.Model):
         return True
 
     @api.multi
-    def tender_in_progress(self):
-        res = super(PurchaseRequisition, self).tender_in_progress()
+    def action_in_progress(self):
+        res = super(PurchaseRequisition, self).action_in_progress()
         self._purchase_request_confirm_message()
         return res
 
@@ -88,8 +88,9 @@ class PurchaseRequisitionLine(models.Model):
         'purchase_request_line_id',
         string='Purchase Request Lines', readonly=True, copy=False)
     has_purchase_request_lines = fields.Boolean(
-        compute="_compute_has_purchase_request_lines",
-        string="Has Purchase Request Lines")
+        string="Has Purchase Request Lines",
+        compute="_compute_has_purchase_request_lines"
+        )
 
     @api.multi
     def action_openRequestLineTreeView(self):

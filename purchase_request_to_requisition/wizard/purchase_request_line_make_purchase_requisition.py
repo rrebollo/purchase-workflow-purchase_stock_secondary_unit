@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 Eficent Business and IT Consulting Services S.L.
+# Copyright 2017 Eficent Business and IT Consulting Services S.L.
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl-3.0).
 
-import openerp.addons.decimal_precision as dp
-from openerp import api, exceptions, fields, models
-from openerp.tools.translate import _
+import odoo.addons.decimal_precision as dp
+from odoo import api, exceptions, fields, models
+from odoo.tools.translate import _
 
 
 class PurchaseRequestLineMakePurchaseRequisition(models.TransientModel):
@@ -91,13 +91,13 @@ class PurchaseRequestLineMakePurchaseRequisition(models.TransientModel):
         for item in self.item_ids:
             line = item.line_id
             if item.product_qty <= 0.0:
-                raise exceptions.Warning(
+                raise exceptions.UserError(
                     _('Enter a positive quantity.'))
             line_company_id = line.company_id \
                 and line.company_id.id or False
             if company_id is not False \
                     and line_company_id != company_id:
-                raise exceptions.Warning(
+                raise exceptions.UserError(
                     _('You have to select lines '
                       'from the same company.'))
             else:
@@ -106,7 +106,7 @@ class PurchaseRequestLineMakePurchaseRequisition(models.TransientModel):
             line_picking_type = line.request_id.picking_type_id
             if picking_type_id is not False \
                     and line_picking_type.id != picking_type_id:
-                raise exceptions.Warning(
+                raise exceptions.UserError(
                     _('You have to select lines '
                       'from the same picking type.'))
             else:
