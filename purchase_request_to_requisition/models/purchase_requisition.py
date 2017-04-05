@@ -109,3 +109,16 @@ class PurchaseRequisitionLine(models.Model):
                 'view_type': 'form',
                 'view_mode': 'tree,form',
                 'domain': domain}
+
+    @api.multi
+    def _prepare_purchase_order_line(self, name, product_qty=0.0,
+                                     price_unit=0.0, taxes_ids=False):
+        res = super(PurchaseRequisitionLine, self). \
+            _prepare_purchase_order_line(
+            name, product_qty=product_qty, price_unit=price_unit,
+            taxes_ids=taxes_ids)
+        res.update({
+            'purchase_request_lines':
+                [(4, line.id) for line in self.purchase_request_lines],
+        })
+        return res
