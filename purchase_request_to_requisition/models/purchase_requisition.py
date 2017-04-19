@@ -60,19 +60,6 @@ class PurchaseRequisition(models.Model):
         self._purchase_request_confirm_message()
         return res
 
-    @api.model
-    def _prepare_purchase_order_line(self, requisition, requisition_line,
-                                     purchase_id, supplier):
-        vals = super(PurchaseRequisition, self)._prepare_purchase_order_line(
-            requisition, requisition_line, purchase_id, supplier)
-        vals.update({
-            'purchase_request_lines':
-                [(4, line.id) for line
-                 in requisition_line.purchase_request_lines],
-        })
-        return vals
-
-
 class PurchaseRequisitionLine(models.Model):
     _inherit = "purchase.requisition.line"
 
