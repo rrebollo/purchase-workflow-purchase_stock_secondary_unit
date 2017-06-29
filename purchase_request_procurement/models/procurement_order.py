@@ -2,11 +2,12 @@
 # Copyright 2016-2017 Eficent Business and IT Consulting Services S.L.
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl-3.0).
 
-from odoo import _, api, fields, models, exceptions
-from odoo.exceptions import ValidationError
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class ProcurementOrder(models.Model):
+
     _inherit = 'procurement.order'
 
     request_id = fields.Many2one(
@@ -76,7 +77,7 @@ class ProcurementOrder(models.Model):
         """
         self.ensure_one()
         if not self.is_create_purchase_request_allowed():
-            raise exceptions.Warning(
+            raise UserError(
                 _("You can't create a purchase request "
                   "for this procurement order (%s).") % self.name)
 
@@ -92,32 +93,24 @@ class ProcurementOrder(models.Model):
             self.message_post(body=_("Purchase Request created"))
             self.request_id = req
         request_line_data = self._prepare_purchase_request_line()
-        purchase_request_line_model.create(request_line_data),
+        purchase_request_line_model.create(request_line_data)
         self.message_post(body=_("Purchase Request extended."))
         return self.request_id
 
     @api.multi
     def propagate_cancels(self):
         result = super(ProcurementOrder, self).propagate_cancels()
+        from_purchase_request = self.env.context.get('from_purchase_request')
         # Remove the reference to the request_id from the procurement order
         for procurement in self:
-            request = procurement.request_id
-            procurement.request_id = False
             # Search for purchase request lines containing the procurement_id
+            # and cancel them
             request_lines = self.env['purchase.request.line'].search(
                 [('procurement_id', '=', procurement.id)])
-            # Remove the purchase request lines, if the request is not draft
-            # or reject, otherwise, raise ValidationError
-            if any(l.request_id.state not in ('draft', 'rejected')
-                   for l in request_lines):
-                raise ValidationError(_(
-                    "Cannot cancel this procurement as the related "
-                    "purchase request is in progress confirmed already. "
-                    "Please cancel the purchase request first."
-                ))
-            else:
-                request_lines.unlink()
-            # If the purchase request has no line, delete it as well
-            if len(request.line_ids) == 0:
-                request.unlink()
+            if request_lines and not from_purchase_request:
+                request_lines.do_cancel()
+                for line in request_lines:
+                    line.message_post(
+                        body=_("Related procurement has been cancelled."))
+            procurement.write({'request_id': None})
         return result

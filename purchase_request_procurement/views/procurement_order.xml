@@ -3,7 +3,6 @@
      License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl-3.0) -->
 
 <odoo>
-    <data>
 
         <record model="ir.ui.view" id="procurement_form_view">
             <field name="name">procurement.form.inherit</field>
@@ -16,5 +15,4 @@
             </field>
         </record>
 
-    </data>
 </odoo>
