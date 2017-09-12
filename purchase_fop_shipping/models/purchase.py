@@ -29,7 +29,7 @@ class PurchaseOrder(models.Model):
     @api.depends('amount_total', 'partner_id.fop_shipping')
     def _compute_fop_shipping_reached(self):
         for record in self:
-            record.fop_reached = record.amount_total >\
+            record.fop_reached = record.amount_total >=\
                 record.partner_id.fop_shipping
 
     @api.multi
