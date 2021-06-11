@@ -1,0 +1,3 @@
+# [14.0][MIG] - packaging_uom #861
+# https://github.com/OCA/product-attribute/pull/861
+odoo14-addon-packaging-uom @ git+https://github.com/OCA/product-attribute@refs/pull/861/head#subdirectory=setup/packaging_uom
