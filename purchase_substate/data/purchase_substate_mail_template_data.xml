@@ -17,7 +17,6 @@
 </div>
         </field>
         <field name="auto_delete" eval="True" />
-        <field name="user_signature" eval="True" />
     </record>
     <record id="mail_template_data_purchase_substate_delivery" model="mail.template">
         <field name="name">In delevery</field>
@@ -36,6 +35,5 @@
 </div>
         </field>
         <field name="auto_delete" eval="True" />
-        <field name="user_signature" eval="True" />
     </record>
 </odoo>
