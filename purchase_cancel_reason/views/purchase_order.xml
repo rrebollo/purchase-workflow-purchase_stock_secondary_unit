@@ -21,7 +21,11 @@
                 <h5 class="mb-3" attrs="{'invisible': [('state', '!=', 'cancel')]}">
                     <label for="cancel_reason_id" />
                     <pan> </pan>
-                    <field name="cancel_reason_id" class="oe_inline" options="{'no_open': True}"/>
+                    <field
+                        name="cancel_reason_id"
+                        class="oe_inline"
+                        options="{'no_open': True}"
+                    />
                 </h5>
             </xpath>
         </field>
