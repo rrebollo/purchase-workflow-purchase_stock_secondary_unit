@@ -13,6 +13,8 @@ class PurchaseOrder(models.Model):
     def onchange_partner_id(self):
         if not is_html_empty(self.partner_id.purchase_note):
             self.notes = self.partner_id.purchase_note
+        elif not is_html_empty(self.partner_id.parent_id.purchase_note):
+            self.notes = self.partner_id.parent_id.purchase_note
         elif (
             self.env["ir.config_parameter"]
             .sudo()
