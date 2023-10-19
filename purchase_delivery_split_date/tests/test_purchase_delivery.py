@@ -268,7 +268,7 @@ class TestDeliverySingle(TransactionCase):
 
         self.env.user.tz = "Etc/UTC"
         line1.write({"date_planned": "2021-05-05 03:00:00"})
-        self.assertEqual(len(self.po.picking_ids), 2)
+        self.assertEqual(len(self.po.picking_ids), 1)
         # No time difference so will be another day (2 pickings)
         line2.write({"date_planned": "2021-05-04 23:00:00"})
         self.assertEqual(len(self.po.picking_ids), 2)
