@@ -12,7 +12,17 @@ class PurchaseOrderLine(models.Model):
     }
 
     product_qty = fields.Float(
-        store=True, readonly=False, compute="_compute_product_qty", copy=True
+        store=True,
+        readonly=False,
+        compute="_compute_product_qty",
+        copy=True,
+        precompute=True,
+    )
+    product_packaging_qty = fields.Float(
+        compute="_compute_product_packaging_qty", store=True, precompute=True
+    )
+    product_packaging_id = fields.Many2one(
+        compute="_compute_product_packaging_id", store=True, precompute=True
     )
 
     @api.depends("product_packaging_qty", "secondary_uom_qty", "secondary_uom_id")
